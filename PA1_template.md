@@ -1,18 +1,15 @@
----
-title: "Reproducible Research: Peer Assessment 1"
-output: 
-  html_document:
-    keep_md: true
----
+# Reproducible Research: Peer Assessment 1
 
 
 ## Loading and preprocessing the data
 Cleanup the environment so we can reproduce:
-```{r echo=TRUE}
+
+```r
 rm(list = ls())
 ```
 Read the file *activity.csv* located under the folder *repdata-data-activity*. Load the data in data frame *d*. 
-```{r echo=TRUE}
+
+```r
 flist <- dir(path = ".", pattern = "^repdata.data.activity$",
              ignore.case = TRUE, include.dirs = TRUE)
 workDir <- flist[ 1 ]
@@ -20,32 +17,52 @@ inputFile <- paste(workDir, "activity.csv", sep = "/");
 d <- read.csv(inputFile)
 ```
 The next step is to convert the *date* column to the *Date* R type:
-```{r echo=TRUE}
+
+```r
 d$date <- as.Date(strptime(d$date, "%Y-%m-%d"))
 ```
 ## What is mean total number of steps taken per day?
 
 ### Calculate the total number of steps taken per day
 The total no of steps per day will be summarized in frame *stepsPerDay* 
-```{r echo=TRUE}
+
+```r
 stepsPerDay <- aggregate(data = d, d$steps ~ d$date, FUN="sum")
 names(stepsPerDay) <- c("date", "steps")
 ```
 
 ### Histogram of the total number of steps taken each day
-```{r echo=TRUE}
+
+```r
 hist(stepsPerDay$steps, 
      main = "Steps per day",
      xlab = "Steps per day",
      col = "blue")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-5-1.png) 
+
 ### The mean and median of the total number of steps taken per day
-```{r echo=TRUE}
+
+```r
 meanStepsPerDay <- mean(as.vector(stepsPerDay$steps), na.rm = TRUE)
 medianStepsPerDay <- median(as.vector(stepsPerDay$steps), na.rm = TRUE)
 print(paste("The mean of the total number of steps taken per day:", meanStepsPerDay))
+```
+
+```
+## [1] "The mean of the total number of steps taken per day: 10766.1886792453"
+```
+
+```r
 print(paste("The median of the total number of steps taken per day:", medianStepsPerDay))
+```
+
+```
+## [1] "The median of the total number of steps taken per day: 10765"
+```
+
+```r
 rm(stepsPerDay)
 ```
 
@@ -53,12 +70,14 @@ rm(stepsPerDay)
 
 ### The average number of steps taken, averaged across all days per 5 minute interval.
 *stepsPerInterval* is used to aggregate the data for the plot:
-```{r echo=TRUE}
+
+```r
 stepsPerInterval <- aggregate(data = d, d$steps ~ d$interval, FUN="mean")
 names(stepsPerInterval) <- c("interval", "steps")
 ```
 Then we create the plot:
-```{r echo=TRUE}
+
+```r
 plot(x = stepsPerInterval$interval,
      y = stepsPerInterval$steps,
      type = "l",
@@ -68,21 +87,34 @@ plot(x = stepsPerInterval$interval,
      col = "black")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-8-1.png) 
+
 ### The 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps
-```{r echo=TRUE}
+
+```r
 v <- as.vector(stepsPerInterval$steps)
 print(paste("The max steps interval:", which.max(v)))
+```
+
+```
+## [1] "The max steps interval: 104"
 ```
 ## Imputing missing values
 
 ### The total number of missing values in the dataset
-```{r echo=TRUE}
+
+```r
 noData <- d[ is.na(d$steps) | is.na(d$date) | is.na(d$interval), ]
 print(paste("The total no. of rows with missing values:", nrow(noData)))
 ```
+
+```
+## [1] "The total no. of rows with missing values: 2304"
+```
 ### A new dataset that is equal to the original dataset but with the missing data filled in
 We replace the missing values in a given 5 minute interval with the average steps for this interval in the entire data set.
-```{r echo=TRUE}
+
+```r
 d1 <- d
 for(idx in 1:nrow(d1))
 {
@@ -96,7 +128,8 @@ for(idx in 1:nrow(d1))
 ```
 
 ### Histogram of the total number of steps taken each day for the new data set
-```{r echo=TRUE}
+
+```r
 stepsPerDay <- aggregate(data = d1, d1$steps ~ d1$date, FUN="sum")
 names(stepsPerDay) <- c("date", "steps")
 
@@ -106,12 +139,29 @@ hist(stepsPerDay$steps,
      col = "blue")
 ```
 
+![](PA1_template_files/figure-html/unnamed-chunk-12-1.png) 
+
 ### The mean and median of the total no. of steps taken per day for the new data set with imputed missing values
-```{r echo=TRUE}
+
+```r
 meanStepsPerDay <- mean(as.vector(stepsPerDay$steps), na.rm = FALSE)
 medianStepsPerDay <- median(as.vector(stepsPerDay$steps), na.rm = FALSE)
 print(paste("The mean of the total number of steps taken per day:", meanStepsPerDay))
+```
+
+```
+## [1] "The mean of the total number of steps taken per day: 10766.1886792453"
+```
+
+```r
 print(paste("The median of the total number of steps taken per day:", medianStepsPerDay))
+```
+
+```
+## [1] "The median of the total number of steps taken per day: 10766.1886792453"
+```
+
+```r
 rm(stepsPerDay)
 ```
 There is slight difference between the results generated from the original data and the data with imputed missing values. The difference will depend on the way the missing values are replaced.
@@ -119,7 +169,8 @@ There is slight difference between the results generated from the original data 
 ## Are there differences in activity patterns between weekdays and weekends?
 
 ### A new factor variable in the dataset with two levels - "weekday" and "weekend"
-```{r echo=TRUE}
+
+```r
 wDay <- "Weekday"
 wEnd <- "Weekend"
 wdays <- c()
@@ -141,7 +192,8 @@ names(d2) <- c("steps", "date", "interval", "wday")
 
 ### The weekdays versus weekends plot
 *wdatAvg* *data.frame* is used to aggregate the data for the plot:
-```{r echo=TRUE}
+
+```r
 wdayAvg <- aggregate(data = d2,
                             d2$steps ~ d2$wday + d2$interval,
                             FUN="mean")
@@ -157,3 +209,5 @@ p <- g + geom_line() +
     labs(title = "Weekdays versus Weekends")      
 print(p)
 ```
+
+![](PA1_template_files/figure-html/unnamed-chunk-15-1.png) 
